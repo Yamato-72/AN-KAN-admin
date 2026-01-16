@@ -1,0 +1,57 @@
+.app-header {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  background-color: #0b8f5a; /* 緑 */
+  color: #fff;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+/* 左側 */
+.app-header-left {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  margin-right: 16px;
+}
+
+.app-title {
+  margin-right: 8px;
+}
+
+.app-arrow {
+  font-size: 20px;
+  opacity: 0.9;
+}
+
+/* 検索エリア */
+.app-header-search {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 6px 10px;
+  flex: 1;
+  max-width: 100%;
+}
+
+.search-icon {
+  margin-right: 8px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  width: 100%;
+  font-size: 14px;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.8);
+}

@@ -1,0 +1,121 @@
+:root { color-scheme: light; }
+
+html, body {
+  padding: 0;
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: #fafafa;
+  color: #111;
+}
+
+a { color: inherit; text-decoration: none; }
+
+.btn {
+  display: inline-block;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.btn:hover { border-color: #bbb; }
+
+/* ===== Sidebar ===== */
+.sb {
+  width: 210px;
+  background: #ffffff;
+  border-right: 1px solid #e8edf2;
+  min-height: calc(100vh - 56px); /* ヘッダー56px想定 */
+}
+
+.sb-top {
+  padding: 10px 10px 6px;
+}
+
+.sb-back {
+  border: none;
+  background: transparent;
+  color: #9aa6b2;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sb-back:hover {
+  color: #6b7785;
+}
+
+.sb-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 14px;
+}
+
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #2d3b45;
+  font-size: 14px;
+}
+
+.sb-item:hover {
+  background: #f3f7fb;
+}
+
+.sb-item.is-active {
+  background: #dff4eb;              /* 画像の淡い緑 */
+  border-color: rgba(11, 143, 90, 0.15);
+  color: #0b8f5a;
+}
+
+.sb-item-icon {
+  width: 20px;
+  display: inline-flex;
+  justify-content: center;
+  opacity: 0.9;
+}
+
+.sb-ico {
+  font-size: 16px;
+}
+
+.sb-item-label {
+  white-space: nowrap;
+}
+
+/* ===== Layout（Header + Sidebar + Content） ===== */
+
+.layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ヘッダー下のエリア */
+.layout-body {
+  flex: 1;
+  display: flex;      /* ← これが無いのが原因 */
+  overflow: hidden;
+}
+
+/* Sidebar（既存 .sb を活かす） */
+.sb {
+  flex: 0 0 210px;    /* ← 幅210px固定を保証 */
+}
+
+/* 右側メインコンテンツ */
+.layout-content {
+  flex: 1;
+  min-width: 0;       /* ← iframe・table対策で超重要 */
+  overflow: auto;
+  background: #fafafa;
+  padding: 16px;
+}
