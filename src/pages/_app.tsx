@@ -11,7 +11,7 @@ import { Header } from "@/components/Header";
 // Sidebar key → URL の対応表
 const ROUTE_MAP: Record<string, string> = {
   dashboard: "/",
-  suppliers: "/suppliers",
+  zaiko: "/zaiko",
   products: "/product-master",
   schemes: "/schemes",
   settings: "/settings",
