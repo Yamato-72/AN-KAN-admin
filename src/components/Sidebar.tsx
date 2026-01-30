@@ -7,8 +7,8 @@ type SidebarItem = {
 const items: SidebarItem[] = [
   { key: "dashboard", label: "ダッシュボード", icon: <span className="sb-ico">🏠</span> },
   { key: "zaiko", label: "在庫管理", icon: <span className="sb-ico">👥</span> },
-  { key: "products", label: "マスタ管理", icon: <span className="sb-ico">📦</span> },
-  { key: "schemes", label: "支払いスキーム", icon: <span className="sb-ico">🧾</span> },
+  { key: "master", label: "マスタ管理", icon: <span className="sb-ico">📦</span> },
+  { key: "odapay", label: "支払管理", icon: <span className="sb-ico">🧾</span> },
   { key: "settings", label: "設定", icon: <span className="sb-ico">⚙️</span> },
 ];
 

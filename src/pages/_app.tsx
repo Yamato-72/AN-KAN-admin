@@ -12,8 +12,8 @@ import { Header } from "@/components/Header";
 const ROUTE_MAP: Record<string, string> = {
   dashboard: "/",
   zaiko: "/zaiko",
-  products: "/product-master",
-  schemes: "/schemes",
+  master: "/product-master",
+  odapay: "/oda-pay",
   settings: "/settings",
 };
 
