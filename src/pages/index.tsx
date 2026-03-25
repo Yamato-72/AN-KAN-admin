@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { Header } from "@/components/Header";
-import { Sidebar } from "@/components/Sidebar";
-import KpiCard from "../components/dashboard/KpiCard";
+import KpiCard from "@/components/dashboard/KpiCard";
 
 type DashboardSummary = {
   salesProjects: {
@@ -34,15 +32,30 @@ function formatYen(value: number) {
 export default function Home() {
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchSummary = async () => {
       try {
         const res = await fetch("/api/dashboard/summary");
         const json = await res.json();
+
+        console.log("summary response:", json);
+
+        if (!res.ok) {
+          setErrorMessage(json?.error || "APIエラーが発生しました");
+          return;
+        }
+
+        if (!json?.salesProjects || !json?.payments || !json?.inventory) {
+          setErrorMessage("APIの返却形式が想定と異なります");
+          return;
+        }
+
         setData(json);
       } catch (error) {
         console.error(error);
+        setErrorMessage("集計データの取得に失敗しました");
       } finally {
         setLoading(false);
       }
@@ -53,15 +66,15 @@ export default function Home() {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f8fafc" }}>
-      <Sidebar />
-
       <div style={{ flex: 1 }}>
-        <Header />
-
         <main style={{ padding: 24 }}>
           <h1 style={{ fontSize: 28, marginBottom: 24 }}>ダッシュボード</h1>
 
           {loading && <p>読み込み中...</p>}
+
+          {!loading && errorMessage && (
+            <p style={{ color: "red" }}>{errorMessage}</p>
+          )}
 
           {!loading && data && (
             <>
@@ -114,4 +127,3 @@ export default function Home() {
     </div>
   );
 }
-
