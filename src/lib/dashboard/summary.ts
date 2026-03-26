@@ -9,6 +9,7 @@ export type DashboardSummary = {
     installationThisMonthCount: number;
     troubleCount: number;
     revenueTotal: number;
+    remainingEstimatedAmount: number;
   };
   payments: {
     orderedThisMonthAmount: number;
@@ -62,6 +63,16 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     SELECT COALESCE(SUM(revenue), 0) AS revenue_total
     FROM projects
     WHERE (lost_flag = false OR lost_flag IS NULL)
+  `);
+
+  //売上見込み
+  const remainingEstimatedResult = await ankanDb.query(`
+    SELECT COALESCE(SUM(
+      GREATEST(COALESCE(estimated_amount, 0) - COALESCE(revenue, 0), 0)
+    ), 0) AS remaining_estimated_amount
+    FROM projects
+    WHERE (lost_flag = false OR lost_flag IS NULL)
+      AND status NOT IN ('設置完了', '失注')
   `);
 
   // MySQL: Oda-pay
@@ -136,6 +147,9 @@ let unpaidAmount = 0;
       installationThisMonthCount: Number(installationResult.rows[0]?.installation_this_month_count || 0),
       troubleCount: Number(troubleResult.rows[0]?.trouble_count || 0),
       revenueTotal: Number(revenueResult.rows[0]?.revenue_total || 0),
+      remainingEstimatedAmount: Number(
+        remainingEstimatedResult.rows[0]?.remaining_estimated_amount || 0
+      ),
     },
     payments: {
       orderedThisMonthAmount: Number((orderedRows as any[])[0]?.ordered_this_month_amount || 0),

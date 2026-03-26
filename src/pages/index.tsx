@@ -8,6 +8,7 @@ type DashboardSummary = {
     installationThisMonthCount: number;
     troubleCount: number;
     revenueTotal: number;
+    remainingEstimatedAmount: number;
   };
   payments: {
     orderedThisMonthAmount: number;
@@ -66,11 +67,23 @@ export default function Home() {
   }, []);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f8fafc" }}>
-      <div style={{ flex: 1 }}>
-        <main style={{ padding: 24 }}>
-          <h1 style={{ fontSize: 28, marginBottom: 24 }}>ダッシュボード</h1>
-
+    <div
+      style={{
+        height: "100%",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <main
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: 24,
+          minHeight: 0,
+        }}
+      >
+        <h1 style={{ fontSize: 28, marginBottom: 24 }}>ダッシュボード</h1>
           {loading && <p>読み込み中...</p>}
 
           {!loading && errorMessage && (
@@ -92,7 +105,7 @@ export default function Home() {
                 <KpiCard title="今月新規営業案件数" value={data.salesProjects.newThisMonthCount} />
                 <KpiCard title="今月設置予定件数" value={data.salesProjects.installationThisMonthCount} />
                 <KpiCard title="営業トラブル件数" value={data.salesProjects.troubleCount} />
-                <KpiCard title="営業売上見込み合計" value={formatYen(data.salesProjects.revenueTotal)} />
+                <KpiCard title="未確定売上見込み（見積−確定売上）" value={formatYen(data.salesProjects.remainingEstimatedAmount)} />
               </div>
 
               <h2 style={{ marginBottom: 12 }}>支払・発注</h2>
@@ -130,12 +143,10 @@ export default function Home() {
                 }}
               >
                 <KpiCard title="在庫総数" value={data.inventory.stockTotalAmount} />
-                <KpiCard title="引当総数" value={data.inventory.reservedTotalAmount} />
+                <KpiCard title="AD在庫総数" value={data.inventory.reservedTotalAmount} />
               </div>
             </>
           )}
         </main>
       </div>
-    </div>
-  );
-}
+  )}
