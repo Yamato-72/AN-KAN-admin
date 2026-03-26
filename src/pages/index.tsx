@@ -102,7 +102,7 @@ export default function Home() {
                 }}
               >
                 <KpiCard title="進行中営業案件数" value={data.salesProjects.inProgressCount} />
-                <KpiCard title="今月新規営業案件数" value={data.salesProjects.newThisMonthCount} />
+                <KpiCard title="今月新規登録案件数" value={data.salesProjects.newThisMonthCount} />
                 <KpiCard title="今月設置予定件数" value={data.salesProjects.installationThisMonthCount} />
                 <KpiCard title="営業トラブル件数" value={data.salesProjects.troubleCount} />
                 <KpiCard title="未確定売上見込み（見積−確定売上）" value={formatYen(data.salesProjects.remainingEstimatedAmount)} />
