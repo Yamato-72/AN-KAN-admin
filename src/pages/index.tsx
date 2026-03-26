@@ -138,7 +138,6 @@ export default function Home() {
               >
                 <KpiCard title="今月発注額" value={formatYen(data.payments.orderedThisMonthAmount)} />
                 <KpiCard title="今月支払済額" value={formatYen(data.payments.paidThisMonthAmount)} />
-                <KpiCard title="未払い額" value={formatYen(data.payments.unpaidAmount)} />
                 <KpiCard title="未払い発注件数" value={data.payments.unpaidPurchaseCount} />
                 {Object.entries(data.payments.unpaidAmountByCurrency).map(([currency, amount]) => (
                   <KpiCard
