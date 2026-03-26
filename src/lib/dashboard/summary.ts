@@ -15,6 +15,7 @@ export type DashboardSummary = {
     paidThisMonthAmount: number;
     unpaidAmount: number;
     unpaidPurchaseCount: number;
+    unpaidAmountByCurrency: Record<string, number>;
   };
   inventory: {
     stockTotalAmount: number;
@@ -24,37 +25,43 @@ export type DashboardSummary = {
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   // Postgres: AN-KAN
+  // 進行中案件数
   const inProgressResult = await ankanDb.query(`
     SELECT COUNT(*) AS in_progress_count
     FROM projects
-    WHERE (lost_flag = 0 OR lost_flag IS NULL)
+    WHERE (lost_flag = false OR lost_flag IS NULL)
       AND status NOT IN ('設置完了', '失注')
   `);
 
+  // 今月新規案件
   const newThisMonthResult = await ankanDb.query(`
     SELECT COUNT(*) AS new_this_month_count
     FROM projects
-    WHERE created_at >= date_trunc('month', current_date)
-      AND created_at < date_trunc('month', current_date) + interval '1 month'
+    WHERE (created_at AT TIME ZONE 'Asia/Tokyo') >= date_trunc('month', now() AT TIME ZONE 'Asia/Tokyo')
+      AND (created_at AT TIME ZONE 'Asia/Tokyo') < date_trunc('month', now() AT TIME ZONE 'Asia/Tokyo') + interval '1 month'
   `);
 
+  // 今月設置予定
   const installationResult = await ankanDb.query(`
     SELECT COUNT(*) AS installation_this_month_count
     FROM projects
-    WHERE installation_date >= date_trunc('month', current_date)
-      AND installation_date < date_trunc('month', current_date) + interval '1 month'
+    WHERE installation_date IS NOT NULL
+      AND (installation_date AT TIME ZONE 'Asia/Tokyo') >= date_trunc('month', now() AT TIME ZONE 'Asia/Tokyo')
+      AND (installation_date AT TIME ZONE 'Asia/Tokyo') < date_trunc('month', now() AT TIME ZONE 'Asia/Tokyo') + interval '1 month'
   `);
 
+  // トラブル件数
   const troubleResult = await ankanDb.query(`
     SELECT COUNT(*) AS trouble_count
     FROM projects
-    WHERE trouble_flag = 1
+    WHERE trouble_flag = true
   `);
 
+  // 売上合計
   const revenueResult = await ankanDb.query(`
     SELECT COALESCE(SUM(revenue), 0) AS revenue_total
     FROM projects
-    WHERE (lost_flag = 0 OR lost_flag IS NULL)
+    WHERE (lost_flag = false OR lost_flag IS NULL)
   `);
 
   // MySQL: Oda-pay
@@ -72,31 +79,44 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       AND paid_date < DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
   `);
 
-  const [unpaidAmountRows] = await odaPayDb.query(`
-    SELECT COALESCE(SUM(
-      p.total_amount - COALESCE(pp.paid_total, 0)
-    ), 0) AS unpaid_amount
-    FROM purchases p
-    LEFT JOIN (
-      SELECT purchase_id, SUM(paid_amount) AS paid_total
-      FROM purchase_payments
-      GROUP BY purchase_id
-    ) pp
-      ON p.id = pp.purchase_id
-    WHERE p.total_amount > COALESCE(pp.paid_total, 0)
-  `);
+  const [summaryRows] = await odaPayDb.query(`
+  SELECT
+    p.id,
+    p.total_amount,
+    p.currency,
+    COALESCE(SUM(
+      CASE
+        WHEN pp.paid_date IS NOT NULL THEN pp.paid_amount
+        ELSE 0
+      END
+    ), 0) AS paid_total
+  FROM purchases p
+  LEFT JOIN purchase_payments pp
+    ON pp.purchase_id = p.id
+  GROUP BY
+    p.id,
+    p.total_amount,
+    p.currency
+`);
 
-  const [unpaidCountRows] = await odaPayDb.query(`
-    SELECT COUNT(*) AS unpaid_purchase_count
-    FROM purchases p
-    LEFT JOIN (
-      SELECT purchase_id, SUM(paid_amount) AS paid_total
-      FROM purchase_payments
-      GROUP BY purchase_id
-    ) pp
-      ON p.id = pp.purchase_id
-    WHERE p.total_amount > COALESCE(pp.paid_total, 0)
-  `);
+const unpaidAmountByCurrency: Record<string, number> = {};
+let unpaidPurchaseCount = 0;
+let unpaidAmount = 0;
+
+(summaryRows as any[]).forEach((row) => {
+  const total = Number(row.total_amount || 0);
+  const paid = Number(row.paid_total || 0);
+  const unpaid = Math.max(total - paid, 0);
+  const currency = row.currency || "UNKNOWN";
+
+  if (unpaid > 0) {
+    unpaidPurchaseCount += 1;
+    unpaidAmount += unpaid;
+    unpaidAmountByCurrency[currency] =
+      (unpaidAmountByCurrency[currency] || 0) + unpaid;
+  }
+});
+
 
   // MySQL: zaiko
   const [stockRows] = await zaikoDb.query(`
@@ -120,8 +140,9 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     payments: {
       orderedThisMonthAmount: Number((orderedRows as any[])[0]?.ordered_this_month_amount || 0),
       paidThisMonthAmount: Number((paidRows as any[])[0]?.paid_this_month_amount || 0),
-      unpaidAmount: Number((unpaidAmountRows as any[])[0]?.unpaid_amount || 0),
-      unpaidPurchaseCount: Number((unpaidCountRows as any[])[0]?.unpaid_purchase_count || 0),
+      unpaidAmount,
+      unpaidPurchaseCount,
+      unpaidAmountByCurrency,
     },
     inventory: {
       stockTotalAmount: Number((stockRows as any[])[0]?.stock_total_amount || 0),

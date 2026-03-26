@@ -12,8 +12,11 @@ export default async function handler(
   try {
     const summary = await getDashboardSummary();
     return res.status(200).json(summary);
-  } catch (error) {
+  } catch (error: any) {
     console.error("dashboard summary api error:", error);
-    return res.status(500).json({ error: "Failed to fetch dashboard summary" });
+    return res.status(500).json({
+      error: "Failed to fetch dashboard summary",
+      detail: error?.message || String(error),
+    });
   }
 }

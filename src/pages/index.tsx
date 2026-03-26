@@ -14,6 +14,7 @@ type DashboardSummary = {
     paidThisMonthAmount: number;
     unpaidAmount: number;
     unpaidPurchaseCount: number;
+    unpaidAmountByCurrency: Record<string, number>; // ←追加
   };
   inventory: {
     stockTotalAmount: number;
@@ -107,6 +108,17 @@ export default function Home() {
                 <KpiCard title="今月支払済額" value={formatYen(data.payments.paidThisMonthAmount)} />
                 <KpiCard title="未払い額" value={formatYen(data.payments.unpaidAmount)} />
                 <KpiCard title="未払い発注件数" value={data.payments.unpaidPurchaseCount} />
+                {Object.entries(data.payments.unpaidAmountByCurrency).map(([currency, amount]) => (
+                  <KpiCard
+                    key={currency}
+                    title={`未払い額 (${currency})`}
+                    value={
+                      currency === "JPY"
+                        ? formatYen(amount as number)
+                        : `${(amount as number).toLocaleString()} ${currency}`
+                    }
+                  />
+                ))}
               </div>
 
               <h2 style={{ marginBottom: 12 }}>在庫</h2>
