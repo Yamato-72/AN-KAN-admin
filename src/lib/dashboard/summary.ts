@@ -143,12 +143,14 @@ let unpaidAmount = 0;
   return {
     salesProjects: {
       inProgressCount: Number(inProgressResult.rows[0]?.in_progress_count || 0),
-      newThisMonthCount: Number(inProgressResult.rows[0]?.new_this_month_count || 0),
+      newThisMonthCount: Number(
+        newThisMonthResult.rows[0]?.new_this_month_count || 0
+      ),
       installationThisMonthCount: Number(installationResult.rows[0]?.installation_this_month_count || 0),
       troubleCount: Number(troubleResult.rows[0]?.trouble_count || 0),
       revenueTotal: Number(revenueResult.rows[0]?.revenue_total || 0),
       remainingEstimatedAmount: Number(
-        remainingEstimatedResult.rows[0]?.remaining_estimated_amount || 0
+      remainingEstimatedResult.rows[0]?.remaining_estimated_amount || 0
       ),
     },
     payments: {

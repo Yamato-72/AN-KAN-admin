@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import KpiCard from "@/components/dashboard/KpiCard";
+import MonthlySalesProjectsChart from "@/components/dashboard/MonthlySalesProjectsChart";
 
 type DashboardSummary = {
   salesProjects: {
@@ -23,6 +24,11 @@ type DashboardSummary = {
   };
 };
 
+type MonthlySalesProjectsItem = {
+  month: string;
+  count: number;
+};
+
 function formatYen(value: number) {
   return new Intl.NumberFormat("ja-JP", {
     style: "currency",
@@ -35,26 +41,39 @@ export default function Home() {
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [monthlySalesProjects, setMonthlySalesProjects] = useState<
+  MonthlySalesProjectsItem[]
+>([]);
 
   useEffect(() => {
-    const fetchSummary = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const res = await fetch("/api/dashboard/summary");
-        const json = await res.json();
+        const [summaryRes, monthlyRes] = await Promise.all([
+          fetch("/api/dashboard/summary"),
+          fetch("/api/dashboard/monthly-sales-projects"),
+        ]);
 
-        console.log("summary response:", json);
+        const summaryJson = await summaryRes.json();
+        const monthlyJson = await monthlyRes.json();
 
-        if (!res.ok) {
-          setErrorMessage(json?.error || "APIエラーが発生しました");
+        console.log("summary response:", summaryJson);
+        console.log("monthly sales projects response:", monthlyJson);
+
+        if (!summaryRes.ok) {
+          setErrorMessage(summaryJson?.error || "APIエラーが発生しました");
           return;
         }
 
-        if (!json?.salesProjects || !json?.payments || !json?.inventory) {
+        if (!summaryJson?.salesProjects || !summaryJson?.payments || !summaryJson?.inventory) {
           setErrorMessage("APIの返却形式が想定と異なります");
           return;
         }
 
-        setData(json);
+        setData(summaryJson);
+
+        if (monthlyRes.ok && Array.isArray(monthlyJson)) {
+          setMonthlySalesProjects(monthlyJson);
+        }
       } catch (error) {
         console.error(error);
         setErrorMessage("集計データの取得に失敗しました");
@@ -63,7 +82,7 @@ export default function Home() {
       }
     };
 
-    fetchSummary();
+    fetchDashboardData();
   }, []);
 
   return (
@@ -144,6 +163,10 @@ export default function Home() {
               >
                 <KpiCard title="在庫総数" value={data.inventory.stockTotalAmount} />
                 <KpiCard title="AD在庫総数" value={data.inventory.reservedTotalAmount} />
+              </div>
+
+              <div style={{ marginTop: 32 }}>
+                <MonthlySalesProjectsChart data={monthlySalesProjects} />
               </div>
             </>
           )}
